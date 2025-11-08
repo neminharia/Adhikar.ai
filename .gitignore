@@ -88,3 +88,17 @@ data/
 # PDFs and documents (user uploads)
 uploads/
 documents/
+
+# ignore venv and model files
+venv/
+archive_new/legalbert_supreme/
+*.safetensors
+*.pt
+*.pkl
+
+# ignore venv and model files
+venv/
+archive_new/legalbert_supreme/
+*.safetensors
+*.pt
+*.pkl
