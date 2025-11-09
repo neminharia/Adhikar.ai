@@ -1,4 +1,4 @@
-# ⚖️ Adhikar.ai - Legal AIII Assistant
+# ⚖️ Adhikar.ai - Legal AI Assistant
 
 A comprehensive legal AI assistant application for predicting Supreme Court case outcomes and providing general legal aid information. Built with Streamlit, LegalBERT, and Google Gemini AI.
 
