@@ -19,7 +19,7 @@ python3 --version
 ## Step 2: Clone Repository
 
 ```bash
-git clone https://github.com/yourusername/SGP_FB.git
+git clone https://github.com/neminharia/Adhikar.ai.git
 cd SGP_FB
 ```
 
