@@ -25,6 +25,18 @@ DATABASE_NAME = "court_chat_db"
 COLLECTION_NAME = "chat_messages"
 MODEL_DIR = "archive_new/legalbert_supreme"  # Folder containing model files
 
+# --- HELPER: Safe print for Windows console compatibility ---
+def safe_print(*args, **kwargs):
+    """Safely print to console, handling Windows encoding errors."""
+    try:
+        import sys
+        message = ' '.join(str(arg) for arg in args)
+        sys.stdout.write(message + '\n')
+        sys.stdout.flush()
+    except (OSError, UnicodeEncodeError, AttributeError):
+        # Silently fail on Windows console encoding issues
+        pass
+
 def _get_secret(section: str, key: str, default=None):
     """Safely read Streamlit secrets; return default if secrets.toml is missing or malformed."""
     try:
@@ -234,25 +246,6 @@ st.markdown("""
         background-color: #D1D5DB;
     }
     
-    /* Make the default file uploader invisible but keep it functional */
-    div[data-testid="stFileUploader"] {
-        position: absolute !important;
-        opacity: 0 !important;
-        width: 1px !important;
-        height: 1px !important;
-        overflow: hidden !important;
-        z-index: -1 !important;
-    }
-    
-    /* Keep the file input accessible for JavaScript */
-    div[data-testid="stFileUploader"] input[type="file"] {
-        position: absolute !important;
-        opacity: 0 !important;
-        width: 1px !important;
-        height: 1px !important;
-        pointer-events: auto !important;
-        z-index: 999 !important;
-    }
     
     /* Language dropdown arrow hover style */
     div[data-baseweb="select"]:hover svg,
@@ -827,10 +820,10 @@ def save_message_to_db(collection, role, content, prediction=None, user_id=None,
             message_doc["session_id"] = session_id
         
         result = collection.insert_one(message_doc)
-        print(f"Message saved to DB with ID: {result.inserted_id} (Hash: {content_hash[:16]}...)")  # Debug log
+        safe_print(f"Message saved to DB with ID: {result.inserted_id} (Hash: {content_hash[:16]}...)")  # Debug log
         return True
     except Exception as e:
-        print(f"DB save failed: {e}")  # Debug log
+        safe_print(f"DB save failed: {e}")  # Debug log
         return False
 
 def get_history_from_db(collection, limit=20):
@@ -892,7 +885,7 @@ def create_user(collection, username: str, email: str, password: str) -> bool:
         collection.insert_one(user_doc)
         return True
     except Exception as e:
-        print(f"Error creating user: {e}")
+        safe_print(f"Error creating user: {e}")
         return False
 
 def authenticate_user(collection, username: str, password: str) -> dict:
@@ -912,7 +905,7 @@ def authenticate_user(collection, username: str, password: str) -> dict:
             }
         return None
     except Exception as e:
-        print(f"Error authenticating user: {e}")
+        safe_print(f"Error authenticating user: {e}")
         return None
 
 def get_user_sessions(collection, user_id: str) -> list:
@@ -924,7 +917,7 @@ def get_user_sessions(collection, user_id: str) -> list:
         ))
         return sessions
     except Exception as e:
-        print(f"Error getting user sessions: {e}")
+        safe_print(f"Error getting user sessions: {e}")
         return []
 
 def create_chat_session(collection, user_id: str, session_name: str = None) -> str:
@@ -946,7 +939,7 @@ def create_chat_session(collection, user_id: str, session_name: str = None) -> s
         collection.insert_one(session_doc)
         return session_id
     except Exception as e:
-        print(f"Error creating session: {e}")
+        safe_print(f"Error creating session: {e}")
         return None
 
 def get_session_messages(collection, session_id: str, user_id: str) -> list:
@@ -958,7 +951,7 @@ def get_session_messages(collection, session_id: str, user_id: str) -> list:
         ))
         return messages
     except Exception as e:
-        print(f"Error getting session messages: {e}")
+        safe_print(f"Error getting session messages: {e}")
         return []
 
 def rename_session(collection, session_id: str, user_id: str, new_name: str) -> bool:
@@ -970,7 +963,7 @@ def rename_session(collection, session_id: str, user_id: str, new_name: str) -> 
         )
         return result.modified_count > 0
     except Exception as e:
-        print(f"Error renaming session: {e}")
+        safe_print(f"Error renaming session: {e}")
         return False
 
 def delete_session(collection, session_id: str, user_id: str) -> bool:
@@ -980,10 +973,10 @@ def delete_session(collection, session_id: str, user_id: str) -> bool:
         messages_result = collection.delete_many(
             {"session_id": session_id, "user_id": user_id}
         )
-        print(f"[INFO] Deleted {messages_result.deleted_count} messages for session {session_id}")
+        safe_print(f"[INFO] Deleted {messages_result.deleted_count} messages for session {session_id}")
         return messages_result.deleted_count >= 0  # Return True even if no messages found
     except Exception as e:
-        print(f"Error deleting session: {e}")
+        safe_print(f"Error deleting session: {e}")
         return False
 
 # --- STREAMLIT APP ---
@@ -1094,31 +1087,33 @@ else:
     st.markdown("---")
 
 # 1. Initialize DB, Model, and Gemini (console output instead of sidebar)
-# Print system status to console (using ASCII-safe characters for Windows compatibility)
-print("=" * 50)
-print("SYSTEM STATUS")
-print("=" * 50)
+# Print system status to console (using safe output for Windows compatibility)
+safe_print("=" * 50)
+safe_print("SYSTEM STATUS")
+safe_print("=" * 50)
+
 client = init_connection()
 if client:
     db = client[DATABASE_NAME]
     collection = db[COLLECTION_NAME]
-    print("[OK] MongoDB: Connected")
+    safe_print("[OK] MongoDB: Connected")
 else:
     db = collection = None
-    print("[ERROR] MongoDB: Disconnected")
+    safe_print("[ERROR] MongoDB: Disconnected")
 
 tokenizer, model = load_legalbert_model()
 if model:
-    print("[OK] LegalBERT Model: Loaded")
+    safe_print("[OK] LegalBERT Model: Loaded")
 else:
-    print("[INFO] LegalBERT Model: Not found (using Gemini AI fallback)")
+    safe_print("[INFO] LegalBERT Model: Not found (using Gemini AI fallback)")
 
 gemini_result = init_gemini()
 if gemini_result[0]:  # If available
-    print(f"[OK] Gemini AI: Active (using {gemini_result[1]})")
+    safe_print(f"[OK] Gemini AI: Active (using {gemini_result[1]})")
 else:
-    print("[WARNING] Gemini AI: Inactive")
-print("=" * 50)
+    safe_print("[WARNING] Gemini AI: Inactive")
+
+safe_print("=" * 50)
 
 # Sidebar starts here
 with st.sidebar:
@@ -1210,7 +1205,7 @@ with st.sidebar:
                                         "content": msg["content"]
                                     })
                             st.session_state.messages_loaded = True
-                            print(f"[INFO] Loaded session: {session_title} ({len(st.session_state.messages)} messages)")
+                            safe_print(f"[INFO] Loaded session: {session_title} ({len(st.session_state.messages)} messages)")
                             st.rerun()
                     
                     with col2:
@@ -1252,7 +1247,7 @@ with st.sidebar:
                             if st.button("Save", key=f"save_rename_{idx}", type="primary"):
                                 if new_name and new_name.strip():
                                     if rename_session(collection, session_id, user_info["user_id"], new_name.strip()):
-                                        print(f"[INFO] Renamed session {session_id} to: {new_name.strip()}")
+                                        safe_print(f"[INFO] Renamed session {session_id} to: {new_name.strip()}")
                                         st.session_state[f"renaming_{idx}"] = False
                                         st.rerun()
                                     else:
@@ -1271,7 +1266,7 @@ with st.sidebar:
                         with col_del1:
                             if st.button("Yes, Delete", key=f"confirm_delete_{idx}", type="primary"):
                                 if delete_session(collection, session_id, user_info["user_id"]):
-                                    print(f"[INFO] Deleted session {session_id} and all its messages")
+                                    safe_print(f"[INFO] Deleted session {session_id} and all its messages")
                                     # Clear the deleting flag
                                     st.session_state[f"deleting_{idx}"] = False
                                     # If this was the current session, clear it
@@ -1332,10 +1327,10 @@ with st.sidebar:
             test_doc = {"test": "connection", "timestamp": datetime.now()}
             result = collection.insert_one(test_doc)
             collection.delete_one({"_id": result.inserted_id})  # Clean up test doc
-            print(f"[OK] Database test successful! Collection: {COLLECTION_NAME}")
-            print("[INFO] Messages are hashed with SHA-256 for security")
+            safe_print(f"[OK] Database test successful! Collection: {COLLECTION_NAME}")
+            safe_print("[INFO] Messages are hashed with SHA-256 for security")
         except Exception as e:
-            print(f"[ERROR] Database test failed: {e}")
+            safe_print(f"[ERROR] Database test failed: {e}")
     
     st.caption("App powered by Streamlit + Hugging Face LegalBERT Supreme")
 
@@ -1372,10 +1367,21 @@ if st.session_state.authenticated and st.session_state.user_info and collection 
 if st.session_state.authenticated:
     chat_container = st.container(height=500, border=False)
     with chat_container:
-        for message in st.session_state.messages:
+        for idx, message in enumerate(st.session_state.messages):
             avatar = "🤖" if message["role"] == "assistant" else "👤"
             with st.chat_message(message["role"], avatar=avatar):
-                st.markdown(message["content"])
+                # Display message content (extract just the user input if it's a user message with doc)
+                if message["role"] == "user" and "doc_filename" in message:
+                    # Show just the user input text, not the doc_info
+                    content = message["content"]
+                    # Remove the doc_info part if present
+                    if "📄 **Source Document:**" in content:
+                        content = content.split("📄 **Source Document:**")[0].strip()
+                    st.markdown(content)
+                    # Show document name as plain text (no download button)
+                    st.caption(f"📄 Source Document: {message['doc_filename']}")
+                else:
+                    st.markdown(message["content"])
 
     # 5. User Input and Response Generation
     # Ensure mode is defined (fallback to case prediction)
@@ -1385,75 +1391,58 @@ if st.session_state.authenticated:
     
     # Upload files section - placed just above the text input box
     if mode == get_text("case_prediction", current_lang):
-        # Create a container for the custom button
-        button_container = st.container()
+        # Initialize file uploader key if not exists
+        if "file_uploader_key" not in st.session_state:
+            st.session_state.file_uploader_key = "case_doc_uploader"
         
-        # Hidden file uploader (for Streamlit to process)
-        with button_container:
-            uploaded_file = st.file_uploader(
-                "",
-                type=["pdf", "png", "jpg", "jpeg"],
-                accept_multiple_files=False,
-                key="case_doc_uploader",
-                label_visibility="collapsed"
-            )
+        # File uploader with custom styling
+        uploaded_file = st.file_uploader(
+            "📎 Attach files (PDF, PNG, JPG, JPEG)",
+            type=["pdf", "png", "jpg", "jpeg"],
+            accept_multiple_files=False,
+            key=st.session_state.file_uploader_key,
+            help="Upload a document to extract text for case analysis"
+        )
         
-        # Custom attach files button that triggers the file uploader
+        # Add custom styling to make the file uploader look better
         st.markdown("""
-        <div style="margin-bottom: 8px;">
-            <label class="custom-attach-button" id="attach-button">
-                <span>📎</span>
-                <span>Attach files</span>
-            </label>
-        </div>
-        <script>
-            function setupAttachButton() {
-                const attachButton = document.getElementById('attach-button');
-                if (!attachButton) {
-                    setTimeout(setupAttachButton, 100);
-                    return;
-                }
-                
-                // Find the Streamlit file input
-                const findFileInput = () => {
-                    const inputs = document.querySelectorAll('input[type="file"]');
-                    for (let input of inputs) {
-                        if (input.closest('[data-testid*="stFileUploader"]') || 
-                            input.closest('.stFileUploader') ||
-                            input.getAttribute('data-testid')?.includes('fileUploader')) {
-                            return input;
-                        }
-                    }
-                    return null;
-                };
-                
-                attachButton.addEventListener('click', function(e) {
-                    e.preventDefault();
-                    e.stopPropagation();
-                    
-                    const fileInput = findFileInput();
-                    if (fileInput) {
-                        fileInput.click();
-                    } else {
-                        // Retry after a short delay
-                        setTimeout(() => {
-                            const retryInput = findFileInput();
-                            if (retryInput) retryInput.click();
-                        }, 200);
-                    }
-                });
+        <style>
+            /* Style the file uploader to look like a custom button */
+            div[data-testid="stFileUploader"] {
+                border: 2px dashed #D1D5DB;
+                border-radius: 8px;
+                padding: 12px;
+                background-color: #F9FAFB;
+                transition: all 0.2s ease;
             }
             
-            // Wait for Streamlit to render
-            if (document.readyState === 'loading') {
-                document.addEventListener('DOMContentLoaded', setupAttachButton);
-            } else {
-                setupAttachButton();
+            div[data-testid="stFileUploader"]:hover {
+                border-color: #9CA3AF;
+                background-color: #F3F4F6;
             }
             
-            // Also try after Streamlit reruns
-            setTimeout(setupAttachButton, 500);
-        </script>
+            /* Style the file uploader button */
+            div[data-testid="stFileUploader"] button {
+                background-color: #1F2937 !important;
+                color: white !important;
+                border: none !important;
+                border-radius: 6px !important;
+                padding: 8px 16px !important;
+                font-weight: 500 !important;
+                cursor: pointer !important;
+                transition: background-color 0.2s ease !important;
+            }
+            
+            div[data-testid="stFileUploader"] button:hover {
+                background-color: #374151 !important;
+            }
+            
+            /* Hide the "Drop files here" text if no file is uploaded */
+            div[data-testid="stFileUploader"] > div:first-child {
+                font-size: 14px;
+                color: #6B7280;
+            }
+        </style>
         """, unsafe_allow_html=True)
         
         # Show option to clear uploaded document if one exists
@@ -1488,16 +1477,25 @@ if st.session_state.authenticated:
                         extracted_text = "\n\n".join([f"Page {p['page']}:\n{p['text']}" for p in pages if p.get('text')])
                 
                 if extracted_text and not extracted_text.startswith("Error"):
-                    # Store extracted text in session state
+                    # Store extracted text and file bytes in session state
                     st.session_state.uploaded_doc_text = extracted_text
                     st.session_state.uploaded_doc_filename = uploaded_file.name
+                    st.session_state.uploaded_doc_bytes = file_bytes  # Store file bytes for download
+                    st.session_state.uploaded_doc_ext = file_ext  # Store file extension
                     st.success(f"✅ Document loaded: {uploaded_file.name} ({len(extracted_text)} characters extracted)")
+                    # Clear the file uploader widget by changing its key (but keep document data)
+                    st.session_state.file_uploader_key = str(uuid.uuid4())
+                    st.rerun()
                 else:
                     st.error(f"❌ Failed to extract text from {uploaded_file.name}")
                     if "uploaded_doc_text" in st.session_state:
                         del st.session_state.uploaded_doc_text
                     if "uploaded_doc_filename" in st.session_state:
                         del st.session_state.uploaded_doc_filename
+                    if "uploaded_doc_bytes" in st.session_state:
+                        del st.session_state.uploaded_doc_bytes
+                    if "uploaded_doc_ext" in st.session_state:
+                        del st.session_state.uploaded_doc_ext
             else:
                 # File already processed, no need to show info again (already shown above)
                 pass
@@ -1512,12 +1510,18 @@ if st.session_state.authenticated:
         # Prepare input text - combine with uploaded document if available
         input_text = user_input
         doc_info = ""
+        doc_filename = None
+        doc_bytes = None
+        doc_ext = None
         
         if mode == get_text("case_prediction", current_lang) and "uploaded_doc_text" in st.session_state:
             # Combine user input with uploaded document text
             doc_filename = st.session_state.get("uploaded_doc_filename", "Document")
             doc_text = st.session_state.uploaded_doc_text
+            doc_bytes = st.session_state.get("uploaded_doc_bytes")
+            doc_ext = st.session_state.get("uploaded_doc_ext", "pdf")
             input_text = f"{doc_text}\n\n---\n\nUser Query: {user_input}"
+            # Show document name as plain text (no link)
             doc_info = f"\n\n📄 **Source Document:** {doc_filename}"
         
         # Create user message for display
@@ -1525,13 +1529,40 @@ if st.session_state.authenticated:
         if doc_info:
             display_message = f"{user_input}{doc_info}"
         
+        # Store document info in message metadata if available
+        message_data = {"role": "user", "content": display_message}
+        if doc_filename and doc_bytes:
+            message_data["doc_filename"] = doc_filename
+            message_data["doc_bytes"] = doc_bytes
+            message_data["doc_ext"] = doc_ext
+        
         # Append user message to session state
-        st.session_state.messages.append({"role": "user", "content": display_message})
+        st.session_state.messages.append(message_data)
         
         # Display user message immediately
         with chat_container:
             with st.chat_message("user", avatar="👤"):
-                st.markdown(display_message)
+                st.markdown(user_input)
+                # Show document name as plain text (no download button)
+                if doc_filename:
+                    st.caption(f"📄 Source Document: {doc_filename}")
+        
+        # Clear file uploader and document data from session state after query is sent
+        # (document is now stored in the message)
+        if mode == get_text("case_prediction", current_lang) and "uploaded_doc_text" in st.session_state:
+            # Clear the file uploader widget by changing its key
+            st.session_state.file_uploader_key = str(uuid.uuid4())
+            # Clear document data from session state (it's now in the message)
+            if "uploaded_doc_text" in st.session_state:
+                del st.session_state.uploaded_doc_text
+            if "uploaded_doc_filename" in st.session_state:
+                del st.session_state.uploaded_doc_filename
+            if "uploaded_doc_bytes" in st.session_state:
+                del st.session_state.uploaded_doc_bytes
+            if "uploaded_doc_ext" in st.session_state:
+                del st.session_state.uploaded_doc_ext
+            if "last_uploaded_file_id" in st.session_state:
+                del st.session_state.last_uploaded_file_id
 
         # Save user message to DB with user and session info
         if collection is not None and st.session_state.user_info and st.session_state.current_session_id:
