@@ -365,7 +365,7 @@ def init_gemini():
                 model_name = free_models[0].split('/')[-1]  # Extract just the model name
                 model = genai.GenerativeModel(model_name)
                 response = model.generate_content("Hello")
-                st.info(f"Using free model: {model_name}")
+                print(f"[INFO] Using free model: {model_name}")
                 return True, model_name
             else:
                 st.error("No free Gemini models available")
