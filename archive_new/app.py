@@ -25,6 +25,18 @@ DATABASE_NAME = "court_chat_db"
 COLLECTION_NAME = "chat_messages"
 MODEL_DIR = "archive_new/legalbert_supreme"  # Folder containing model files
 
+# --- HELPER: Safe print for Windows console compatibility ---
+def safe_print(*args, **kwargs):
+    """Safely print to console, handling Windows encoding errors."""
+    try:
+        import sys
+        message = ' '.join(str(arg) for arg in args)
+        sys.stdout.write(message + '\n')
+        sys.stdout.flush()
+    except (OSError, UnicodeEncodeError, AttributeError):
+        # Silently fail on Windows console encoding issues
+        pass
+
 def _get_secret(section: str, key: str, default=None):
     """Safely read Streamlit secrets; return default if secrets.toml is missing or malformed."""
     try:
@@ -207,7 +219,316 @@ st.markdown("""
         padding: 1rem !important;
         border-radius: 10px !important;
     }
+    
+    /* Custom attach files button styling */
+    .custom-attach-button {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        padding: 8px 16px;
+        background-color: #F3F4F6;
+        border: 1px solid #D1D5DB;
+        border-radius: 8px;
+        cursor: pointer;
+        font-size: 14px;
+        font-weight: 500;
+        color: #374151;
+        transition: all 0.2s ease;
+        user-select: none;
+    }
+    
+    .custom-attach-button:hover {
+        background-color: #E5E7EB;
+        border-color: #9CA3AF;
+    }
+    
+    .custom-attach-button:active {
+        background-color: #D1D5DB;
+    }
+    
+    
+    /* Language dropdown arrow hover style */
+    div[data-baseweb="select"]:hover svg,
+    div[data-baseweb="select"]:hover [data-baseweb="select"] svg {
+        transform: rotate(180deg);
+        transition: transform 0.3s ease;
+    }
+    
+    /* Alternative selector for language dropdown */
+    .stSelectbox > div > div:hover svg,
+    .stSelectbox:hover svg {
+        transform: rotate(180deg) !important;
+        transition: transform 0.3s ease !important;
+    }
+    
+    /* More specific selector for Streamlit selectbox arrow */
+    div[data-testid="stSelectbox"] > div > div:hover > div > svg,
+    div[data-testid="stSelectbox"]:hover > div > div > div > svg {
+        transform: rotate(180deg) !important;
+        transition: transform 0.3s ease !important;
+    }
+    
+    /* Change cursor to pointer when hovering over language dropdown */
+    div[data-testid="stSelectbox"],
+    div[data-testid="stSelectbox"] > div,
+    div[data-testid="stSelectbox"] > div > div,
+    div[data-baseweb="select"] {
+        cursor: pointer !important;
+    }
+    
+    div[data-testid="stSelectbox"]:hover,
+    div[data-testid="stSelectbox"] > div:hover,
+    div[data-testid="stSelectbox"] > div > div:hover {
+        cursor: pointer !important;
+    }
+    
+    /* Set minimum width for sidebar */
+    section[data-testid="stSidebar"] {
+        min-width: 280px !important;
+    }
+    
+    /* Prevent sidebar from collapsing below minimum width */
+    section[data-testid="stSidebar"] > div {
+        min-width: 280px !important;
+    }
+    
+    /* Only fix main content area when sidebar is ACTUALLY collapsed */
+    section[data-testid="stSidebar"][aria-expanded="false"] ~ div[data-testid="stAppViewContainer"] > div:last-child {
+        margin-left: 0 !important;
+        padding-left: 1rem !important;
+        width: 100% !important;
+        max-width: 100% !important;
+    }
+    
+    /* Only apply to block containers when sidebar is collapsed */
+    section[data-testid="stSidebar"][aria-expanded="false"] ~ div[data-testid="stAppViewContainer"] .block-container {
+        margin-left: 0 !important;
+        padding-left: 1rem !important;
+        max-width: 100% !important;
+    }
+    
+    /* Style New Chat button (primary) in sidebar to match dark theme */
+    section[data-testid="stSidebar"] button[data-testid*="baseButton-primary"],
+    section[data-testid="stSidebar"] button[kind="primary"],
+    section[data-testid="stSidebar"] div[data-baseweb="button"][kind="primary"],
+    section[data-testid="stSidebar"] div[data-baseweb="button"][kind="primary"] button {
+        background-color: rgba(0, 128, 255, 0.7) !important;
+        color: #FFFFFF !important;
+        border: 1px solid rgba(0, 128, 255, 0.5) !important;
+        border-radius: 6px !important;
+        font-weight: 500 !important;
+        transition: all 0.2s ease !important;
+    }
+    
+    section[data-testid="stSidebar"] button[data-testid*="baseButton-primary"]:hover,
+    section[data-testid="stSidebar"] button[kind="primary"]:hover,
+    section[data-testid="stSidebar"] div[data-baseweb="button"][kind="primary"]:hover,
+    section[data-testid="stSidebar"] div[data-baseweb="button"][kind="primary"]:hover button {
+        background-color: rgba(0, 128, 255, 0.9) !important;
+        border-color: rgba(0, 128, 255, 0.8) !important;
+        transform: translateY(-1px) !important;
+        box-shadow: 0 2px 4px rgba(0, 128, 255, 0.3) !important;
+    }
+    
+    /* Style Logout button (secondary) in sidebar to match dark theme */
+    section[data-testid="stSidebar"] button[data-testid*="baseButton-secondary"],
+    section[data-testid="stSidebar"] button[kind="secondary"],
+    section[data-testid="stSidebar"] div[data-baseweb="button"][kind="secondary"],
+    section[data-testid="stSidebar"] div[data-baseweb="button"][kind="secondary"] button {
+        background-color: rgba(108, 117, 125, 0.6) !important;
+        color: #FFFFFF !important;
+        border: 1px solid rgba(108, 117, 125, 0.5) !important;
+        border-radius: 6px !important;
+        font-weight: 500 !important;
+        transition: all 0.2s ease !important;
+    }
+    
+    section[data-testid="stSidebar"] button[data-testid*="baseButton-secondary"]:hover,
+    section[data-testid="stSidebar"] button[kind="secondary"]:hover,
+    section[data-testid="stSidebar"] div[data-baseweb="button"][kind="secondary"]:hover,
+    section[data-testid="stSidebar"] div[data-baseweb="button"][kind="secondary"]:hover button {
+        background-color: rgba(108, 117, 125, 0.8) !important;
+        border-color: rgba(108, 117, 125, 0.7) !important;
+        transform: translateY(-1px) !important;
+        box-shadow: 0 2px 4px rgba(108, 117, 125, 0.3) !important;
+    }
+    
+    /* Target all buttons in sidebar columns for Quick Actions */
+    section[data-testid="stSidebar"] div[data-testid="column"] button[type="button"] {
+        transition: all 0.2s ease !important;
+    }
+    
+    /* Make session div clickable */
+    .session-item {
+        cursor: pointer;
+        padding: 8px;
+        border-radius: 6px;
+        transition: background-color 0.2s ease;
+    }
+    
+    .session-item:hover {
+        background-color: #f0f2f6;
+    }
+    
+    /* Prevent button clicks from triggering session load */
+    .session-item button {
+        pointer-events: auto;
+    }
 </style>
+
+<script>
+(function() {
+    // Function to style buttons in sidebar to match dark theme
+    function styleSidebarButtons() {
+        const sidebar = document.querySelector('section[data-testid="stSidebar"]');
+        if (!sidebar) return;
+        
+        // Find all buttons in the sidebar
+        const buttons = sidebar.querySelectorAll('button[type="button"]');
+        buttons.forEach(function(button) {
+            const buttonText = button.textContent || button.innerText;
+            
+            // Style New Chat button (primary)
+            if (buttonText.includes('New Chat') || buttonText.includes('नया चैट') || buttonText.includes('નવી ચેટ')) {
+                const parentDiv = button.closest('div[data-baseweb="button"]');
+                if (parentDiv && parentDiv.getAttribute('kind') === 'primary') {
+                    button.style.backgroundColor = 'rgba(0, 128, 255, 0.7)';
+                    button.style.color = '#FFFFFF';
+                    button.style.border = '1px solid rgba(0, 128, 255, 0.5)';
+                    button.style.borderRadius = '6px';
+                    button.style.fontWeight = '500';
+                    button.style.transition = 'all 0.2s ease';
+                    
+                    button.addEventListener('mouseenter', function() {
+                        this.style.backgroundColor = 'rgba(0, 128, 255, 0.9)';
+                        this.style.borderColor = 'rgba(0, 128, 255, 0.8)';
+                        this.style.transform = 'translateY(-1px)';
+                        this.style.boxShadow = '0 2px 4px rgba(0, 128, 255, 0.3)';
+                    });
+                    
+                    button.addEventListener('mouseleave', function() {
+                        this.style.backgroundColor = 'rgba(0, 128, 255, 0.7)';
+                        this.style.borderColor = 'rgba(0, 128, 255, 0.5)';
+                        this.style.transform = 'translateY(0)';
+                        this.style.boxShadow = 'none';
+                    });
+                }
+            }
+            
+            // Style Logout button (secondary)
+            if (buttonText.includes('Logout') || buttonText.includes('लॉगआउट') || buttonText.includes('લૉગઆઉટ')) {
+                const parentDiv = button.closest('div[data-baseweb="button"]');
+                if (parentDiv && parentDiv.getAttribute('kind') === 'secondary') {
+                    button.style.backgroundColor = 'rgba(108, 117, 125, 0.6)';
+                    button.style.color = '#FFFFFF';
+                    button.style.border = '1px solid rgba(108, 117, 125, 0.5)';
+                    button.style.borderRadius = '6px';
+                    button.style.fontWeight = '500';
+                    button.style.transition = 'all 0.2s ease';
+                    
+                    button.addEventListener('mouseenter', function() {
+                        this.style.backgroundColor = 'rgba(108, 117, 125, 0.8)';
+                        this.style.borderColor = 'rgba(108, 117, 125, 0.7)';
+                        this.style.transform = 'translateY(-1px)';
+                        this.style.boxShadow = '0 2px 4px rgba(108, 117, 125, 0.3)';
+                    });
+                    
+                    button.addEventListener('mouseleave', function() {
+                        this.style.backgroundColor = 'rgba(108, 117, 125, 0.6)';
+                        this.style.borderColor = 'rgba(108, 117, 125, 0.5)';
+                        this.style.transform = 'translateY(0)';
+                        this.style.boxShadow = 'none';
+                    });
+                }
+            }
+        });
+    }
+    
+    // Function to fix sidebar collapse spacing
+    function fixSidebarCollapse() {
+        const sidebar = document.querySelector('section[data-testid="stSidebar"]');
+        if (!sidebar) return;
+        
+        const isCollapsed = sidebar.getAttribute('aria-expanded') === 'false';
+        
+        if (isCollapsed) {
+            // Find main content area and ensure it uses full width ONLY when collapsed
+            const mainContent = document.querySelector('[data-testid="stAppViewContainer"] > div:last-child');
+            if (mainContent) {
+                mainContent.style.marginLeft = '0';
+                mainContent.style.paddingLeft = '1rem';
+                mainContent.style.width = '100%';
+                mainContent.style.maxWidth = '100%';
+            }
+            
+            // Also target block containers ONLY when collapsed
+            const blockContainers = document.querySelectorAll('[data-testid="stAppViewContainer"] .block-container');
+            blockContainers.forEach(function(container) {
+                container.style.marginLeft = '0';
+                container.style.paddingLeft = '1rem';
+                container.style.maxWidth = '100%';
+            });
+        } else {
+            // When sidebar is expanded, reset any forced styles to let Streamlit handle it
+            const mainContent = document.querySelector('[data-testid="stAppViewContainer"] > div:last-child');
+            if (mainContent) {
+                mainContent.style.marginLeft = '';
+                mainContent.style.paddingLeft = '';
+                mainContent.style.width = '';
+                mainContent.style.maxWidth = '';
+            }
+        }
+    }
+    
+    // Run functions on load and after delays
+    function initializeStyling() {
+        styleSidebarButtons();
+        fixSidebarCollapse();
+    }
+    
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', initializeStyling);
+    } else {
+        initializeStyling();
+    }
+    
+    setTimeout(initializeStyling, 100);
+    setTimeout(initializeStyling, 500);
+    setTimeout(initializeStyling, 1000);
+    
+    // Watch for sidebar state changes
+    const sidebarObserver = new MutationObserver(function() {
+        styleSidebarButtons();
+        fixSidebarCollapse();
+    });
+    
+    const sidebar = document.querySelector('section[data-testid="stSidebar"]');
+    if (sidebar) {
+        sidebarObserver.observe(sidebar, {
+            attributes: true,
+            attributeFilter: ['aria-expanded', 'style', 'class'],
+            subtree: true
+        });
+    }
+    
+    // Also observe when buttons are added
+    const buttonObserver = new MutationObserver(function() {
+        setTimeout(styleSidebarButtons, 100);
+    });
+    
+    if (sidebar) {
+        buttonObserver.observe(sidebar, {
+            childList: true,
+            subtree: true
+        });
+    }
+    
+    // Fix sidebar collapse on window resize
+    window.addEventListener('resize', function() {
+        setTimeout(fixSidebarCollapse, 100);
+    });
+})();
+</script>
 """, unsafe_allow_html=True)
 
 # --- HELPER FUNCTIONS ---
@@ -238,7 +559,7 @@ def load_legalbert_model():
     try:
         # Ensure the model directory exists before loading
         if not os.path.isdir(MODEL_DIR):
-            st.error(f"Model directory not found: {MODEL_DIR}")
+            # Don't show error here - will be handled in main UI
             return None, None
             
         tokenizer = AutoTokenizer.from_pretrained(MODEL_DIR)
@@ -246,7 +567,7 @@ def load_legalbert_model():
         model.eval()
         return tokenizer, model
     except Exception as e:
-        st.error(f"Model Load Error: {e}")
+        # Don't show error here - will be handled in main UI
         return None, None
 
 @st.cache_resource
@@ -264,7 +585,7 @@ def init_gemini():
                 model_name = free_models[0].split('/')[-1]  # Extract just the model name
                 model = genai.GenerativeModel(model_name)
                 response = model.generate_content("Hello")
-                st.info(f"Using free model: {model_name}")
+                print(f"[INFO] Using free model: {model_name}")
                 return True, model_name
             else:
                 st.error("No free Gemini models available")
@@ -291,6 +612,72 @@ def predict_outcome(tokenizer, model, text):
     prediction = class_labels.get(predicted_class, f"Class_{predicted_class}")
 
     return prediction, confidence
+
+def predict_outcome_with_gemini(case_text, model_name="gemini-2.5-flash-preview-05-20", language="English"):
+    """Fallback: Predict legal case outcome using Gemini AI when LegalBERT model is not available."""
+    if not GEMINI_API_KEY:
+        return "Appeal Dismissed", 0.5  # Default fallback
+    
+    try:
+        model = genai.GenerativeModel(model_name)
+        
+        # Language-specific instructions
+        language_instruction = ""
+        if language == "Hindi":
+            language_instruction = "\n\n**IMPORTANT:** Please provide your ENTIRE response in Hindi (हिंदी)."
+        elif language == "Gujarati":
+            language_instruction = "\n\n**IMPORTANT:** Please provide your ENTIRE response in Gujarati (ગુજરાતી)."
+        
+        prompt = f"""
+        **Role:** You are an expert legal AI assistant specializing in Supreme Court of India case analysis.
+
+        **Case Text:**
+        {case_text}
+
+        **Your Task:**
+        Analyze the above Supreme Court case text and predict the outcome. You must respond with ONLY one of these two options:
+        - "Appeal Dismissed" - if the appeal is likely to be dismissed
+        - "Appeal Allowed" - if the appeal is likely to be allowed
+
+        Also provide a confidence score between 0.0 and 1.0 (where 1.0 is very confident).
+
+        **Response Format (JSON only, no other text):**
+        {{
+            "prediction": "Appeal Dismissed" or "Appeal Allowed",
+            "confidence": 0.85
+        }}
+        {language_instruction}
+        """
+        
+        response = model.generate_content(prompt)
+        response_text = response.text.strip()
+        
+        # Try to parse JSON response
+        import json
+        # Remove markdown code blocks if present
+        if "```json" in response_text:
+            response_text = response_text.split("```json")[1].split("```")[0].strip()
+        elif "```" in response_text:
+            response_text = response_text.split("```")[1].split("```")[0].strip()
+        
+        try:
+            result = json.loads(response_text)
+            prediction = result.get("prediction", "Appeal Dismissed")
+            confidence = float(result.get("confidence", 0.7))
+            # Ensure prediction is one of the valid options
+            if prediction not in ["Appeal Dismissed", "Appeal Allowed"]:
+                prediction = "Appeal Dismissed"
+            return prediction, confidence
+        except json.JSONDecodeError:
+            # Fallback: try to extract prediction from text
+            if "Appeal Allowed" in response_text:
+                return "Appeal Allowed", 0.75
+            else:
+                return "Appeal Dismissed", 0.75
+                
+    except Exception as e:
+        # Default fallback on error
+        return "Appeal Dismissed", 0.5
 
 # ---------------------------
 # Document Upload & RAG helpers
@@ -653,10 +1040,10 @@ def save_message_to_db(collection, role, content, prediction=None, user_id=None,
             message_doc["session_id"] = session_id
         
         result = collection.insert_one(message_doc)
-        print(f"Message saved to DB with ID: {result.inserted_id} (Hash: {content_hash[:16]}...)")  # Debug log
+        safe_print(f"Message saved to DB with ID: {result.inserted_id} (Hash: {content_hash[:16]}...)")  # Debug log
         return True
     except Exception as e:
-        print(f"DB save failed: {e}")  # Debug log
+        safe_print(f"DB save failed: {e}")  # Debug log
         return False
 
 def get_history_from_db(collection, limit=20):
@@ -718,7 +1105,7 @@ def create_user(collection, username: str, email: str, password: str) -> bool:
         collection.insert_one(user_doc)
         return True
     except Exception as e:
-        print(f"Error creating user: {e}")
+        safe_print(f"Error creating user: {e}")
         return False
 
 def authenticate_user(collection, username: str, password: str) -> dict:
@@ -738,7 +1125,7 @@ def authenticate_user(collection, username: str, password: str) -> dict:
             }
         return None
     except Exception as e:
-        print(f"Error authenticating user: {e}")
+        safe_print(f"Error authenticating user: {e}")
         return None
 
 def get_user_sessions(collection, user_id: str) -> list:
@@ -750,7 +1137,7 @@ def get_user_sessions(collection, user_id: str) -> list:
         ))
         return sessions
     except Exception as e:
-        print(f"Error getting user sessions: {e}")
+        safe_print(f"Error getting user sessions: {e}")
         return []
 
 def create_chat_session(collection, user_id: str, session_name: str = None) -> str:
@@ -772,7 +1159,7 @@ def create_chat_session(collection, user_id: str, session_name: str = None) -> s
         collection.insert_one(session_doc)
         return session_id
     except Exception as e:
-        print(f"Error creating session: {e}")
+        safe_print(f"Error creating session: {e}")
         return None
 
 def get_session_messages(collection, session_id: str, user_id: str) -> list:
@@ -784,8 +1171,33 @@ def get_session_messages(collection, session_id: str, user_id: str) -> list:
         ))
         return messages
     except Exception as e:
-        print(f"Error getting session messages: {e}")
+        safe_print(f"Error getting session messages: {e}")
         return []
+
+def rename_session(collection, session_id: str, user_id: str, new_name: str) -> bool:
+    """Rename a session."""
+    try:
+        result = collection.update_one(
+            {"session_id": session_id, "user_id": user_id, "role": "session_start"},
+            {"$set": {"content": new_name, "content_hash": hash_message(new_name)}}
+        )
+        return result.modified_count > 0
+    except Exception as e:
+        safe_print(f"Error renaming session: {e}")
+        return False
+
+def delete_session(collection, session_id: str, user_id: str) -> bool:
+    """Delete a session and all its messages from the database."""
+    try:
+        # Delete all messages in this session
+        messages_result = collection.delete_many(
+            {"session_id": session_id, "user_id": user_id}
+        )
+        safe_print(f"[INFO] Deleted {messages_result.deleted_count} messages for session {session_id}")
+        return messages_result.deleted_count >= 0  # Return True even if no messages found
+    except Exception as e:
+        safe_print(f"Error deleting session: {e}")
+        return False
 
 # --- STREAMLIT APP ---
 
@@ -874,30 +1286,8 @@ else:
     # Main Application Interface (only shown when authenticated)
     user_info = st.session_state.user_info
     
-    # User info and logout
-    col1, col2, col3 = st.columns([2, 1, 1])
-    with col1:
-        st.success(f"{get_text('welcome_user', current_lang)}, {user_info['username']}!")
-    with col2:
-        if st.button(get_text("new_chat", current_lang)):
-            st.session_state.current_session_id = None
-            st.session_state.messages = []
-            # Reset flag to allow reloading messages for new session
-            if "messages_loaded" in st.session_state:
-                del st.session_state.messages_loaded
-            st.rerun()
-    with col3:
-        if st.button(get_text("logout", current_lang)):
-            st.session_state.authenticated = False
-            st.session_state.user_info = None
-            st.session_state.current_session_id = None
-            st.session_state.messages = []
-            # Clear session flags
-            if "messages_loaded" in st.session_state:
-                del st.session_state.messages_loaded
-            if "current_mode" in st.session_state:
-                del st.session_state.current_mode
-            st.rerun()
+    # User welcome message
+    st.success(f"{get_text('welcome_user', current_lang)}, {user_info['username']}! 👋")
     
     # Security indicator
     st.info(get_text("secure_chat", current_lang))
@@ -914,204 +1304,253 @@ else:
     )
     st.session_state.current_mode = mode
     
-    # Show document upload option only for Case Outcome Prediction mode
-    if mode == get_text("case_prediction", current_lang):
-        st.markdown("---")
-        col1, col2 = st.columns([3, 1])
-        with col1:
-            st.markdown("**📄 Upload Court Case Document (Optional)**")
-            st.caption("Upload a PDF or Image file containing case details. The extracted text will be used along with your input for prediction.")
-        with col2:
-            uploaded_file = st.file_uploader(
-                "Choose file",
-                type=["pdf", "png", "jpg", "jpeg"],
-                accept_multiple_files=False,
-                key="case_doc_uploader",
-                label_visibility="collapsed"
-            )
-            
-            if uploaded_file is not None:
-                # Check if this is a new upload
-                file_id = f"{uploaded_file.name}_{uploaded_file.size}"
-                if "last_uploaded_file_id" not in st.session_state or st.session_state.last_uploaded_file_id != file_id:
-                    st.session_state.last_uploaded_file_id = file_id
-                    # Extract text immediately
-                    file_bytes = uploaded_file.getvalue()
-                    file_ext = uploaded_file.name.split('.')[-1].lower() if '.' in uploaded_file.name else "pdf"
-                    
-                    with st.spinner(f"📄 Extracting text from {uploaded_file.name}..."):
-                        if file_ext.lower() in ["png", "jpg", "jpeg"]:
-                            extracted_text = extract_image_text(file_bytes)
-                        else:
-                            # For PDF, extract all pages
-                            pages = extract_pdf_pages_text_or_ocr(file_bytes)
-                            extracted_text = "\n\n".join([f"Page {p['page']}:\n{p['text']}" for p in pages if p.get('text')])
-                    
-                    if extracted_text and not extracted_text.startswith("Error"):
-                        # Store extracted text in session state
-                        st.session_state.uploaded_doc_text = extracted_text
-                        st.session_state.uploaded_doc_filename = uploaded_file.name
-                        st.success(f"✅ Document loaded: {uploaded_file.name}")
-                        st.info(f"📄 Extracted {len(extracted_text)} characters. Now type your query below (e.g., 'predict the case outcome and explain').")
-                    else:
-                        st.error(f"❌ Failed to extract text from {uploaded_file.name}")
-                        if "uploaded_doc_text" in st.session_state:
-                            del st.session_state.uploaded_doc_text
-                        if "uploaded_doc_filename" in st.session_state:
-                            del st.session_state.uploaded_doc_filename
-                else:
-                    # File already processed, show info
-                    if "uploaded_doc_text" in st.session_state:
-                        st.success(f"✅ {st.session_state.get('uploaded_doc_filename', 'Document')} loaded")
-            
-            # Show option to clear uploaded document
-            if "uploaded_doc_text" in st.session_state:
-                if st.button("🗑️ Clear Document", key="clear_doc"):
-                    del st.session_state.uploaded_doc_text
-                    if "uploaded_doc_filename" in st.session_state:
-                        del st.session_state.uploaded_doc_filename
-                    if "last_uploaded_file_id" in st.session_state:
-                        del st.session_state.last_uploaded_file_id
-                    st.rerun()
-    
     st.markdown("---")
 
-# 1. Initialize DB, Model, and Gemini in Sidebar
+# 1. Initialize DB, Model, and Gemini (console output instead of sidebar)
+# Print system status to console (using safe output for Windows compatibility)
+safe_print("=" * 50)
+safe_print("SYSTEM STATUS")
+safe_print("=" * 50)
+
+client = init_connection()
+if client:
+    db = client[DATABASE_NAME]
+    collection = db[COLLECTION_NAME]
+    safe_print("[OK] MongoDB: Connected")
+else:
+    db = collection = None
+    safe_print("[ERROR] MongoDB: Disconnected")
+
+tokenizer, model = load_legalbert_model()
+if model:
+    safe_print("[OK] LegalBERT Model: Loaded")
+else:
+    safe_print("[INFO] LegalBERT Model: Not found (using Gemini AI fallback)")
+
+gemini_result = init_gemini()
+if gemini_result[0]:  # If available
+    safe_print(f"[OK] Gemini AI: Active (using {gemini_result[1]})")
+else:
+    safe_print("[WARNING] Gemini AI: Inactive")
+
+safe_print("=" * 50)
+
+# Sidebar starts here
 with st.sidebar:
-    st.subheader(get_text("system_status", current_lang))
-    client = init_connection()
-    if client:
-        db = client[DATABASE_NAME]
-        collection = db[COLLECTION_NAME]
-        st.success(get_text("db_connected", current_lang))
-    else:
-        db = collection = None
-        st.error(get_text("db_disconnected", current_lang))
-
-    tokenizer, model = load_legalbert_model()
-    if model:
-        st.success(get_text("model_loaded", current_lang))
-    else:
-        st.error(get_text("model_error", current_lang))
-    
-    gemini_result = init_gemini()
-    if gemini_result[0]:  # If available
-        st.success(get_text("gemini_active", current_lang))
-    else:
-        st.warning(get_text("gemini_inactive", current_lang))
-
-    st.markdown("---")
-    
-    # Language Selector
-    st.subheader(get_text("language_selector", current_lang))
-    language_options = [f"{SUPPORTED_LANGUAGES[lang]['native_name']} ({lang})" for lang in SUPPORTED_LANGUAGES.keys()]
-    # Safely get index, default to 0 if language not found
-    try:
-        default_idx = list(SUPPORTED_LANGUAGES.keys()).index(st.session_state.language)
-    except ValueError:
-        default_idx = 0
-        st.session_state.language = list(SUPPORTED_LANGUAGES.keys())[0]
-    
-    selected_lang_idx = st.selectbox(
-        "Language / भाषा / ભાષા",
-        range(len(language_options)),
-        format_func=lambda x: language_options[x],
-        index=default_idx
-    )
-    
-    selected_language = list(SUPPORTED_LANGUAGES.keys())[selected_lang_idx]
-    if selected_language != st.session_state.language:
-        st.session_state.language = selected_language
-        st.rerun()
-    
-    st.markdown("---")
-    
     # Show user-specific features only when authenticated
     if st.session_state.authenticated:
         user_info = st.session_state.user_info
         
-        # Session Management
-        st.subheader(get_text("chat_history", current_lang))
+        # Enhanced New Chat and Logout buttons at the top
+        st.markdown("### Quick Actions")
+        col1, col2 = st.columns(2)
+        with col1:
+            if st.button(get_text("new_chat", current_lang), use_container_width=True, type="primary"):
+                st.session_state.current_session_id = None
+                st.session_state.messages = []
+                # Reset flag to allow reloading messages for new session
+                if "messages_loaded" in st.session_state:
+                    del st.session_state.messages_loaded
+                st.rerun()
+        with col2:
+            if st.button(get_text("logout", current_lang), use_container_width=True, type="secondary"):
+                st.session_state.authenticated = False
+                st.session_state.user_info = None
+                st.session_state.current_session_id = None
+                st.session_state.messages = []
+                # Clear session flags
+                if "messages_loaded" in st.session_state:
+                    del st.session_state.messages_loaded
+                if "current_mode" in st.session_state:
+                    del st.session_state.current_mode
+                st.rerun()
+        
+        st.markdown("---")
+        
+        # Language Selector (moved above Previous Chats)
+        st.subheader(get_text("language_selector", current_lang))
+        language_options = [f"{SUPPORTED_LANGUAGES[lang]['native_name']} ({lang})" for lang in SUPPORTED_LANGUAGES.keys()]
+        # Safely get index, default to 0 if language not found
+        try:
+            default_idx = list(SUPPORTED_LANGUAGES.keys()).index(st.session_state.language)
+        except ValueError:
+            default_idx = 0
+            st.session_state.language = list(SUPPORTED_LANGUAGES.keys())[0]
+        
+        selected_lang_idx = st.selectbox(
+            "Language / भाषा / ભાષા",
+            range(len(language_options)),
+            format_func=lambda x: language_options[x],
+            index=default_idx
+        )
+        
+        selected_language = list(SUPPORTED_LANGUAGES.keys())[selected_lang_idx]
+        if selected_language != st.session_state.language:
+            st.session_state.language = selected_language
+            st.rerun()
+        
+        st.markdown("---")
+        
+        # Previous Chats - Display prominently
+        st.subheader("Previous Chats")
         
         if collection is not None:
             sessions = get_user_sessions(collection, user_info["user_id"])
             
             if sessions:
-                session_options = [f"{s['content']} ({s['timestamp'].strftime('%Y-%m-%d %H:%M')})" for s in sessions]
-                selected_session_idx = st.selectbox("Select a session:", range(len(session_options)), format_func=lambda x: session_options[x])
-                
-                if st.button("Load Session"):
-                    selected_session = sessions[selected_session_idx]
-                    st.session_state.current_session_id = selected_session["session_id"]
-                    # Load session messages
-                    session_messages = get_session_messages(collection, selected_session["session_id"], user_info["user_id"])
-                    st.session_state.messages = []
-                    for msg in session_messages:
-                        if msg["role"] in ["user", "assistant"]:
-                            st.session_state.messages.append({
-                                "role": msg["role"],
-                                "content": msg["content"]
-                            })
-                    st.session_state.messages_loaded = True  # Mark as loaded
-                    st.success(f"Loaded session: {selected_session['content']}")
-                    st.rerun()
+                # Display sessions in a more appealing way
+                for idx, session in enumerate(sessions):
+                    session_date = session['timestamp'].strftime('%Y-%m-%d %H:%M')
+                    session_title = session.get('content', 'Untitled Chat')[:50]
+                    session_id = session.get('session_id')
+                    
+                    # Create a clickable container for each session
+                    session_container_key = f"session_container_{idx}"
+                    
+                    # Use columns with clickable area
+                    col1, col2, col3 = st.columns([3, 0.5, 0.5])
+                    
+                    with col1:
+                        # Make the entire column clickable by using a button that looks like text
+                        if st.button(f"**{session_title}**\n\n{session_date}", key=f"load_session_{idx}", help="Click to load this session", use_container_width=True):
+                            selected_session = session
+                            st.session_state.current_session_id = selected_session["session_id"]
+                            # Load session messages
+                            session_messages = get_session_messages(collection, selected_session["session_id"], user_info["user_id"])
+                            st.session_state.messages = []
+                            for msg in session_messages:
+                                if msg["role"] in ["user", "assistant"]:
+                                    st.session_state.messages.append({
+                                        "role": msg["role"],
+                                        "content": msg["content"]
+                                    })
+                            st.session_state.messages_loaded = True
+                            safe_print(f"[INFO] Loaded session: {session_title} ({len(st.session_state.messages)} messages)")
+                            st.rerun()
+                    
+                    with col2:
+                        if st.button("✏️", key=f"rename_{idx}", help="Rename this session", use_container_width=True):
+                            st.session_state[f"renaming_{idx}"] = True
+                            st.rerun()
+                    with col3:
+                        if st.button("🗑️", key=f"delete_{idx}", help="Delete this session", use_container_width=True):
+                            st.session_state[f"deleting_{idx}"] = True
+                            st.rerun()
+                    
+                    # Add CSS to make the load button look like regular text
+                    st.markdown(f"""
+                    <style>
+                        button[data-testid*="load_session_{idx}"] {{
+                            background: transparent !important;
+                            border: none !important;
+                            text-align: left !important;
+                            padding: 8px !important;
+                            cursor: pointer !important;
+                            box-shadow: none !important;
+                        }}
+                        button[data-testid*="load_session_{idx}"]:hover {{
+                            background-color: #f0f2f6 !important;
+                            border-radius: 6px !important;
+                        }}
+                    </style>
+                    """, unsafe_allow_html=True)
+                    
+                    # Rename dialog
+                    if st.session_state.get(f"renaming_{idx}", False):
+                        new_name = st.text_input(
+                            "Enter new session name:",
+                            value=session_title,
+                            key=f"rename_input_{idx}"
+                        )
+                        col_rename1, col_rename2 = st.columns(2)
+                        with col_rename1:
+                            if st.button("Save", key=f"save_rename_{idx}", type="primary"):
+                                if new_name and new_name.strip():
+                                    if rename_session(collection, session_id, user_info["user_id"], new_name.strip()):
+                                        safe_print(f"[INFO] Renamed session {session_id} to: {new_name.strip()}")
+                                        st.session_state[f"renaming_{idx}"] = False
+                                        st.rerun()
+                                    else:
+                                        st.error("Failed to rename session")
+                                else:
+                                    st.warning("Please enter a valid name")
+                        with col_rename2:
+                            if st.button("Cancel", key=f"cancel_rename_{idx}"):
+                                st.session_state[f"renaming_{idx}"] = False
+                                st.rerun()
+                    
+                    # Delete confirmation
+                    if st.session_state.get(f"deleting_{idx}", False):
+                        st.warning(f"Are you sure you want to delete '{session_title}'? This will delete all conversations in this session.")
+                        col_del1, col_del2 = st.columns(2)
+                        with col_del1:
+                            if st.button("Yes, Delete", key=f"confirm_delete_{idx}", type="primary"):
+                                if delete_session(collection, session_id, user_info["user_id"]):
+                                    safe_print(f"[INFO] Deleted session {session_id} and all its messages")
+                                    # Clear the deleting flag
+                                    st.session_state[f"deleting_{idx}"] = False
+                                    # If this was the current session, clear it
+                                    if st.session_state.current_session_id == session_id:
+                                        st.session_state.current_session_id = None
+                                        st.session_state.messages = []
+                                        if "messages_loaded" in st.session_state:
+                                            del st.session_state.messages_loaded
+                                    st.rerun()
+                                else:
+                                    st.error("Failed to delete session")
+                        with col_del2:
+                            if st.button("Cancel", key=f"cancel_delete_{idx}"):
+                                st.session_state[f"deleting_{idx}"] = False
+                                st.rerun()
+                        
+                        st.markdown("---")
             else:
-                st.caption("No previous sessions found.")
+                st.info("No previous chats found. Start a new conversation!")
         
         # Current Session Info
         if st.session_state.current_session_id:
-            st.info(f"📌 Current Session: {st.session_state.current_session_id[:8]}...")
+            st.success(f"Active: {st.session_state.current_session_id[:8]}...")
         else:
-            st.info("📌 No active session")
+            st.info("No active session")
         
         st.markdown("---")
-        
-        # Recent Messages (User-specific)
-        st.subheader("🕰️ Recent Messages")
-        
-        if collection is not None and st.session_state.current_session_id:
-            session_messages = get_session_messages(collection, st.session_state.current_session_id, user_info["user_id"])
-            
-            if session_messages:
-                with st.expander("Show Session Messages"):
-                    for item in session_messages:
-                        if item["role"] in ["user", "assistant"]:
-                            timestamp_str = item.get("timestamp", datetime.min).strftime("%H:%M:%S")
-                            role = item.get("role", "unknown")
-                            content = item.get("content", "")
-                            content_hash = item.get("content_hash", "")
-                            
-                            # Verify message integrity
-                            integrity_status = "✅" if content_hash and verify_message_integrity(content, content_hash) else "⚠️"
-                            
-                            if role == "user":
-                                content_summary = content[:40] + "..." if len(content) > 40 else content
-                                st.markdown(f"**👤 User** ({timestamp_str}) {integrity_status}: *{content_summary}*")
-                            elif role == "assistant":
-                                prediction = item.get("prediction", "N/A")
-                                st.markdown(f"**🤖 AI** ({timestamp_str}) {integrity_status}: **Outcome: `{prediction}`**")
-                
-                st.caption(f"Found {len([m for m in session_messages if m['role'] in ['user', 'assistant']])} messages in current session.")
-            else:
-                st.caption("No messages in current session.")
-        else:
-            st.caption("No active session to display messages.")
-
-    st.markdown("---")
     
-    # Debug info for MongoDB
+    # Language Selector (for non-authenticated users)
+    if not st.session_state.authenticated:
+        st.subheader(get_text("language_selector", current_lang))
+        language_options = [f"{SUPPORTED_LANGUAGES[lang]['native_name']} ({lang})" for lang in SUPPORTED_LANGUAGES.keys()]
+        # Safely get index, default to 0 if language not found
+        try:
+            default_idx = list(SUPPORTED_LANGUAGES.keys()).index(st.session_state.language)
+        except ValueError:
+            default_idx = 0
+            st.session_state.language = list(SUPPORTED_LANGUAGES.keys())[0]
+        
+        selected_lang_idx = st.selectbox(
+            "Language / भाषा / ભાષા",
+            range(len(language_options)),
+            format_func=lambda x: language_options[x],
+            index=default_idx
+        )
+        
+        selected_language = list(SUPPORTED_LANGUAGES.keys())[selected_lang_idx]
+        if selected_language != st.session_state.language:
+            st.session_state.language = selected_language
+            st.rerun()
+        
+        st.markdown("---")
+    
+    # Debug info for MongoDB - console output instead of frontend
     if collection is not None:
         try:
             # Test database connection
             test_doc = {"test": "connection", "timestamp": datetime.now()}
             result = collection.insert_one(test_doc)
             collection.delete_one({"_id": result.inserted_id})  # Clean up test doc
-            st.success(f"✅ Database test successful! Collection: {COLLECTION_NAME}")
-            
-            # Security status
-            st.info("🔒 Messages are hashed with SHA-256 for security")
+            safe_print(f"[OK] Database test successful! Collection: {COLLECTION_NAME}")
+            safe_print("[INFO] Messages are hashed with SHA-256 for security")
         except Exception as e:
-            st.error(f"❌ Database test failed: {e}")
+            safe_print(f"[ERROR] Database test failed: {e}")
     
     st.caption("App powered by Streamlit + Hugging Face LegalBERT Supreme")
 
@@ -1148,10 +1587,21 @@ if st.session_state.authenticated and st.session_state.user_info and collection 
 if st.session_state.authenticated:
     chat_container = st.container(height=500, border=False)
     with chat_container:
-        for message in st.session_state.messages:
+        for idx, message in enumerate(st.session_state.messages):
             avatar = "🤖" if message["role"] == "assistant" else "👤"
             with st.chat_message(message["role"], avatar=avatar):
-                st.markdown(message["content"])
+                # Display message content (extract just the user input if it's a user message with doc)
+                if message["role"] == "user" and "doc_filename" in message:
+                    # Show just the user input text, not the doc_info
+                    content = message["content"]
+                    # Remove the doc_info part if present
+                    if "📄 **Source Document:**" in content:
+                        content = content.split("📄 **Source Document:**")[0].strip()
+                    st.markdown(content)
+                    # Show document name as plain text (no download button)
+                    st.caption(f"📄 Source Document: {message['doc_filename']}")
+                else:
+                    st.markdown(message["content"])
 
     # 5. User Input and Response Generation
     # Ensure mode is defined (fallback to case prediction)
@@ -1159,8 +1609,297 @@ if st.session_state.authenticated:
         st.session_state.current_mode = get_text("case_prediction", current_lang)
     mode = st.session_state.current_mode
     
+    # File upload section - integrated with chat input
     if mode == get_text("case_prediction", current_lang):
+        # Initialize file uploader key and show state
+        if "file_uploader_key" not in st.session_state:
+            st.session_state.file_uploader_key = "case_doc_uploader"
+        if "show_file_uploader" not in st.session_state:
+            st.session_state.show_file_uploader = False
+        
+        # Show uploaded document indicator if document exists
+        if "uploaded_doc_text" in st.session_state:
+            col_doc1, col_doc2 = st.columns([10, 1])
+            with col_doc1:
+                st.caption(f"📎 {st.session_state.get('uploaded_doc_filename', 'Document')} attached")
+            with col_doc2:
+                if st.button("🗑️", key="clear_doc", help="Clear document"):
+                    del st.session_state.uploaded_doc_text
+                    if "uploaded_doc_filename" in st.session_state:
+                        del st.session_state.uploaded_doc_filename
+                    if "uploaded_doc_bytes" in st.session_state:
+                        del st.session_state.uploaded_doc_bytes
+                    if "uploaded_doc_ext" in st.session_state:
+                        del st.session_state.uploaded_doc_ext
+                    if "last_uploaded_file_id" in st.session_state:
+                        del st.session_state.last_uploaded_file_id
+                    st.rerun()
+        
+        # Show file uploader only when triggered by + button
+        if st.session_state.show_file_uploader:
+            uploaded_file = st.file_uploader(
+                "Upload Document (PDF, PNG, JPG, JPEG)",
+                type=["pdf", "png", "jpg", "jpeg"],
+                accept_multiple_files=False,
+                key=st.session_state.file_uploader_key,
+                help="Upload a PDF or image document (max 200MB)",
+                label_visibility="visible"
+            )
+        else:
+            uploaded_file = None
+        
+        # Handle file upload
+        if uploaded_file is not None:
+            # Check if this is a new upload
+            file_id = f"{uploaded_file.name}_{uploaded_file.size}"
+            if "last_uploaded_file_id" not in st.session_state or st.session_state.last_uploaded_file_id != file_id:
+                st.session_state.last_uploaded_file_id = file_id
+                # Extract text immediately
+                file_bytes = uploaded_file.getvalue()
+                file_ext = uploaded_file.name.split('.')[-1].lower() if '.' in uploaded_file.name else "pdf"
+                
+                with st.spinner(f"📄 Extracting text from {uploaded_file.name}..."):
+                    if file_ext.lower() in ["png", "jpg", "jpeg"]:
+                        extracted_text = extract_image_text(file_bytes)
+                    else:
+                        # For PDF, extract all pages
+                        pages = extract_pdf_pages_text_or_ocr(file_bytes)
+                        extracted_text = "\n\n".join([f"Page {p['page']}:\n{p['text']}" for p in pages if p.get('text')])
+                
+                if extracted_text and not extracted_text.startswith("Error"):
+                    # Store extracted text and file bytes in session state
+                    st.session_state.uploaded_doc_text = extracted_text
+                    st.session_state.uploaded_doc_filename = uploaded_file.name
+                    st.session_state.uploaded_doc_bytes = file_bytes  # Store file bytes for download
+                    st.session_state.uploaded_doc_ext = file_ext  # Store file extension
+                    st.success(f"✅ Document loaded: {uploaded_file.name} ({len(extracted_text)} characters extracted)")
+                    # Hide file uploader and reset key
+                    st.session_state.show_file_uploader = False
+                    st.session_state.file_uploader_key = str(uuid.uuid4())
+                    st.rerun()
+                else:
+                    st.error(f"❌ Failed to extract text from {uploaded_file.name}")
+                    if "uploaded_doc_text" in st.session_state:
+                        del st.session_state.uploaded_doc_text
+                    if "uploaded_doc_filename" in st.session_state:
+                        del st.session_state.uploaded_doc_filename
+                    if "uploaded_doc_bytes" in st.session_state:
+                        del st.session_state.uploaded_doc_bytes
+                    if "uploaded_doc_ext" in st.session_state:
+                        del st.session_state.uploaded_doc_ext
+                    st.session_state.show_file_uploader = False
+                    st.rerun()
+    
+    # Chat input box with attach button inside (only for Case Outcome Prediction mode)
+    if mode == get_text("case_prediction", current_lang):
+        # Create attach button in a container that will be positioned via CSS/JS
+        attach_btn_container = st.container()
+        with attach_btn_container:
+            attach_clicked = st.button("➕", key="attach_btn_inline", help="Attach document")
+            if attach_clicked:
+                st.session_state.show_file_uploader = not st.session_state.show_file_uploader
+                st.rerun()
+        
+        # Chat input - same as General Legal Aid mode
         user_input = st.chat_input(get_text("enter_case", current_lang))
+        
+        # CSS and JavaScript to position + button inside the chat input and keep it properly aligned
+        st.markdown("""
+        <style>
+            /* Ensure chat input container is positioned relatively */
+            div[data-testid="stChatInput"] {
+                position: relative !important;
+            }
+            
+            /* Add proper left padding to input to make room for + icon */
+            div[data-testid="stChatInput"] input[type="text"],
+            div[data-testid="stChatInput"] input {
+                padding-left: 44px !important;
+            }
+            
+            /* Style the attach button - will be positioned by JavaScript */
+            button[data-testid*="attach_btn_inline"] {
+                width: 28px !important;
+                height: 28px !important;
+                min-width: 28px !important;
+                min-height: 28px !important;
+                padding: 0 !important;
+                margin: 0 !important;
+                background: transparent !important;
+                border: none !important;
+                border-radius: 50% !important;
+                display: flex !important;
+                align-items: center !important;
+                justify-content: center !important;
+                font-size: 18px !important;
+                color: #FAFAFA !important;
+                cursor: pointer !important;
+                transition: all 0.2s ease !important;
+                box-shadow: none !important;
+            }
+            
+            button[data-testid*="attach_btn_inline"]:hover {
+                background: rgba(255, 255, 255, 0.1) !important;
+                transform: scale(1.1) !important;
+            }
+            
+            button[data-testid*="attach_btn_inline"]:focus {
+                outline: none !important;
+                box-shadow: none !important;
+            }
+            
+            /* Hide the button's original container */
+            div:has(> button[data-testid*="attach_btn_inline"]):not([data-testid="stChatInput"]) {
+                display: none !important;
+                visibility: hidden !important;
+                height: 0 !important;
+                padding: 0 !important;
+                margin: 0 !important;
+            }
+        </style>
+        
+        <script>
+        (function() {
+            let attachBtn = null;
+            let chatInputContainer = null;
+            let chatInputField = null;
+            
+            function positionAttachButton() {
+                // Find elements
+                attachBtn = attachBtn || document.querySelector('button[data-testid*="attach_btn_inline"]');
+                chatInputContainer = chatInputContainer || document.querySelector('div[data-testid="stChatInput"]');
+                chatInputField = chatInputField || (chatInputContainer ? chatInputContainer.querySelector('input[type="text"]') : null);
+                
+                if (!attachBtn || !chatInputContainer || !chatInputField) {
+                    return;
+                }
+                
+                // Ensure container is relative
+                chatInputContainer.style.position = 'relative';
+                
+                // Position button absolutely inside the input container
+                attachBtn.style.position = 'absolute';
+                attachBtn.style.left = '12px';
+                attachBtn.style.top = '50%';
+                attachBtn.style.transform = 'translateY(-50%)';
+                attachBtn.style.zIndex = '100';
+                attachBtn.style.background = 'transparent';
+                attachBtn.style.border = 'none';
+                attachBtn.style.borderRadius = '50%';
+                attachBtn.style.width = '28px';
+                attachBtn.style.height = '28px';
+                attachBtn.style.minWidth = '28px';
+                attachBtn.style.minHeight = '28px';
+                attachBtn.style.padding = '0';
+                attachBtn.style.display = 'flex';
+                attachBtn.style.alignItems = 'center';
+                attachBtn.style.justifyContent = 'center';
+                attachBtn.style.fontSize = '18px';
+                attachBtn.style.color = '#FAFAFA';
+                attachBtn.style.cursor = 'pointer';
+                
+                // Ensure input has proper padding
+                chatInputField.style.paddingLeft = '44px';
+                
+                // Move button into input container
+                if (attachBtn.parentElement !== chatInputContainer) {
+                    chatInputContainer.appendChild(attachBtn);
+                }
+                
+                // Hide original container
+                const originalContainer = attachBtn.getAttribute('data-original-container');
+                if (originalContainer) {
+                    const container = document.querySelector(originalContainer);
+                    if (container) {
+                        container.style.display = 'none';
+                        container.style.visibility = 'hidden';
+                        container.style.height = '0';
+                        container.style.padding = '0';
+                        container.style.margin = '0';
+                    }
+                }
+            }
+            
+            // Position button multiple times to ensure it works
+            function initializeButton() {
+                attachBtn = null;
+                chatInputContainer = null;
+                chatInputField = null;
+                positionAttachButton();
+            }
+            
+            // Run on load
+            if (document.readyState === 'loading') {
+                document.addEventListener('DOMContentLoaded', initializeButton);
+            } else {
+                initializeButton();
+            }
+            
+            // Run with delays
+            setTimeout(initializeButton, 100);
+            setTimeout(initializeButton, 300);
+            setTimeout(initializeButton, 600);
+            
+            // Watch for DOM changes
+            const observer = new MutationObserver(function(mutations) {
+                let shouldReposition = false;
+                mutations.forEach(function(mutation) {
+                    if (mutation.type === 'childList' || mutation.type === 'attributes') {
+                        shouldReposition = true;
+                    }
+                });
+                if (shouldReposition) {
+                    setTimeout(initializeButton, 50);
+                }
+            });
+            
+            // Observe document for new elements
+            observer.observe(document.body, {
+                childList: true,
+                subtree: true,
+                attributes: false
+            });
+            
+            // Observe input container specifically
+            const chatInputObserver = new MutationObserver(function() {
+                setTimeout(initializeButton, 50);
+            });
+            
+            const observeInput = setInterval(function() {
+                const chatInput = document.querySelector('div[data-testid="stChatInput"]');
+                if (chatInput) {
+                    chatInputObserver.observe(chatInput, {
+                        childList: true,
+                        subtree: true,
+                        attributes: true,
+                        attributeFilter: ['style', 'class']
+                    });
+                    clearInterval(observeInput);
+                }
+            }, 100);
+            
+            // Re-position on resize (but debounce)
+            let resizeTimeout;
+            window.addEventListener('resize', function() {
+                clearTimeout(resizeTimeout);
+                resizeTimeout = setTimeout(initializeButton, 100);
+            });
+            
+            // Re-position when input is interacted with
+            document.addEventListener('click', function(e) {
+                if (e.target.closest('div[data-testid="stChatInput"]')) {
+                    setTimeout(initializeButton, 50);
+                }
+            });
+            
+            document.addEventListener('focus', function(e) {
+                if (e.target.closest('div[data-testid="stChatInput"]')) {
+                    setTimeout(initializeButton, 50);
+                }
+            }, true);
+        })();
+        </script>
+        """, unsafe_allow_html=True)
     else:
         user_input = st.chat_input(get_text("enter_question", current_lang))
 
@@ -1168,12 +1907,18 @@ if st.session_state.authenticated:
         # Prepare input text - combine with uploaded document if available
         input_text = user_input
         doc_info = ""
+        doc_filename = None
+        doc_bytes = None
+        doc_ext = None
         
         if mode == get_text("case_prediction", current_lang) and "uploaded_doc_text" in st.session_state:
             # Combine user input with uploaded document text
             doc_filename = st.session_state.get("uploaded_doc_filename", "Document")
             doc_text = st.session_state.uploaded_doc_text
+            doc_bytes = st.session_state.get("uploaded_doc_bytes")
+            doc_ext = st.session_state.get("uploaded_doc_ext", "pdf")
             input_text = f"{doc_text}\n\n---\n\nUser Query: {user_input}"
+            # Show document name as plain text (no link)
             doc_info = f"\n\n📄 **Source Document:** {doc_filename}"
         
         # Create user message for display
@@ -1181,13 +1926,40 @@ if st.session_state.authenticated:
         if doc_info:
             display_message = f"{user_input}{doc_info}"
         
+        # Store document info in message metadata if available
+        message_data = {"role": "user", "content": display_message}
+        if doc_filename and doc_bytes:
+            message_data["doc_filename"] = doc_filename
+            message_data["doc_bytes"] = doc_bytes
+            message_data["doc_ext"] = doc_ext
+        
         # Append user message to session state
-        st.session_state.messages.append({"role": "user", "content": display_message})
+        st.session_state.messages.append(message_data)
         
         # Display user message immediately
         with chat_container:
             with st.chat_message("user", avatar="👤"):
-                st.markdown(display_message)
+                st.markdown(user_input)
+                # Show document name as plain text (no download button)
+                if doc_filename:
+                    st.caption(f"📄 Source Document: {doc_filename}")
+        
+        # Clear file uploader and document data from session state after query is sent
+        # (document is now stored in the message)
+        if mode == get_text("case_prediction", current_lang) and "uploaded_doc_text" in st.session_state:
+            # Clear the file uploader widget by changing its key
+            st.session_state.file_uploader_key = str(uuid.uuid4())
+            # Clear document data from session state (it's now in the message)
+            if "uploaded_doc_text" in st.session_state:
+                del st.session_state.uploaded_doc_text
+            if "uploaded_doc_filename" in st.session_state:
+                del st.session_state.uploaded_doc_filename
+            if "uploaded_doc_bytes" in st.session_state:
+                del st.session_state.uploaded_doc_bytes
+            if "uploaded_doc_ext" in st.session_state:
+                del st.session_state.uploaded_doc_ext
+            if "last_uploaded_file_id" in st.session_state:
+                del st.session_state.last_uploaded_file_id
 
         # Save user message to DB with user and session info
         if collection is not None and st.session_state.user_info and st.session_state.current_session_id:
@@ -1211,14 +1983,21 @@ if st.session_state.authenticated:
                 
                 if mode == get_text("case_prediction", current_lang):
                     if model:
-                        # Use combined text (document + user input) for prediction
+                        # Use combined text (document + user input) for prediction with LegalBERT
                         prediction, confidence = predict_outcome(tokenizer, model, input_text)
                         if gemini_result[0]:  # If Gemini is available
                             response = generate_legal_explanation(input_text, prediction, gemini_result[1], context_messages, current_lang)
                         else:
                             response = f"### ⚖️ Predicted Outcome: `{prediction}`\n\n**Confidence:** {confidence:.2%}\n\n*Gemini AI not available for detailed analysis. Please configure your API key.*"
                     else:
-                        response = "⚠️ LegalBERT model not loaded. Please check your model folder path."
+                        # Fallback: Use Gemini for prediction when LegalBERT model is not available
+                        if gemini_result[0]:  # If Gemini is available
+                            prediction, confidence = predict_outcome_with_gemini(input_text, gemini_result[1], current_lang)
+                            response = generate_legal_explanation(input_text, prediction, gemini_result[1], context_messages, current_lang)
+                            # Add a note that Gemini was used instead of LegalBERT
+                            response = f"*Note: Using Gemini AI for prediction (LegalBERT model not available).*\n\n{response}"
+                        else:
+                            response = "⚠️ LegalBERT model not loaded and Gemini AI is not available. Please configure at least one of them."
                 else:  # General Legal Aid mode
                     if gemini_result[0]:  # If Gemini is available
                         response = provide_legal_aid_info(user_input, gemini_result[1], context_messages, current_lang)
