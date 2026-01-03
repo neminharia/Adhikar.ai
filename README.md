@@ -1,7 +1,7 @@
 # ⚖️ Adhikar.ai - Legal AI Assistant
 
 A comprehensive legal AI assistant application for predicting Supreme Court case outcomes and providing general legal aid information. Built with Streamlit, LegalBERT, and Google Gemini AI.
-# Users Law Students
+
 ![Python](https://img.shields.io/badge/python-3.8+-blue.svg)
 ![Streamlit](https://img.shields.io/badge/streamlit-1.28+-red.svg)
 ![License](https://img.shields.io/badge/license-MIT-green.svg)
